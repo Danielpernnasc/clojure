@@ -1,3 +1,5 @@
+(ns carro.carroacao.carroMovimentoAtom)
+; ...existing code...
 (def carr (atom {:velocidade 0 :marcha 0 :ligado false}))
 
 
@@ -9,33 +11,34 @@
     (< velocidade 39) 4
     :else 5)) ;; se quiser 6ª marcha
 
+; ...existing code...
 
-
+;; Versão atual (ok)
 (defn ligar-carro []
   (swap! carr assoc :velocidade 0 :marcha 0 :ligado true))
 
 (defn desligar-carro []
-    (swap! carr assoc :velocidade 0 :marcha 0 :ligado false))
+  (swap! carr assoc :velocidade 0 :marcha 0 :ligado false))
 
+  ; ...existing code...
 (defn engatar-primeira []
-    (swap! carr 
-        (fn [c]
-            (if (and  (:ligado c) (zero? (:velocidade c)) (zero? (:marcha c)))
-            (assoc c :marcha 1)
-            c))))
-
+  (swap! carr
+    (fn [c]
+      (if (and (:ligado c) (zero? (:velocidade c)) (zero? (:marcha c)))
+        (assoc c :marcha 1)
+        c))))
+; ...existing code...
 (defn acelerar [incremento]
-   (swap! carr
-        (fn [c]
-            (if (:ligado c)
-                (let [c (if (and (zero? (:velocidade c)) (zero? (:marcha  c)))
-                          (assoc c :marcha 1)
-                          c)
-                          nova-velocidade (+ (:velocidade c) incremento)
-                          nova-marcha (marchaVelocidade nova-velocidade)]
-                         (assoc c :velocidade nova-velocidade :marcha nova-marcha)
-                          )
-                          c))))
+  (swap! carr
+    (fn [c]
+      (if (:ligado c)
+        (let [c  (if (and (zero? (:velocidade c)) (zero? (:marcha c)))
+                   (assoc c :marcha 1)
+                   c)
+              nv (+ (:velocidade c) incremento)
+              nm (if (zero? nv) 0 (marchaVelocidade nv))]
+          (assoc c :velocidade nv :marcha nm))
+        c))))
 
 (defn desacelerar [decremento]
    (swap! carr
@@ -60,7 +63,6 @@
             nova-marcha (if (zero? nova-velocidade) 0 (marchaVelocidade nova-velocidade))]
         (assoc c :velocidade nova-velocidade :marcha nova-marcha)))))
 
-
 (defn semaforo []
     (parar))
 
@@ -81,58 +83,28 @@
                     (assoc c :velocidade velocidade :marcha nova-marcha))
                     c))))
 
-  (defn mostrar [etapa]
-    (println (str etapa ": Velocidade = " (:velocidade @carr) " km/h, Marcha = " (:marcha @carr) ", Ligado = " (:ligado @carr))))
-  
-(ligar-carro)
-(mostrar "Ligou o carro")
-
-(engatar-primeira)
-(mostrar "Engatou o carro")
 
 
-(acelerar 10)
-(mostrar "Iniciou o movimento Acelerou 10 km/h")
-
-(acelerar 10)
-(mostrar "Acelerou 20 km/h")
-
-(acelerar 10)
-(mostrar "Acelerou 30 km/h")
-
-(acelerar 10)
-(mostrar "Acelerou 40 km/h")
+(defn mostrar [etapa]
+  (let [{:keys [velocidade marcha ligado]} @carr]
+    (println (str etapa ": Velocidade = " velocidade " km/h, Marcha = " marcha ", Ligado = " ligado))))
+; ...existing code...
 
 
-(frear 20)
-(mostrar "Freou 10 km/h")
+(defn mostrar [etapa]
+  (let [{:keys [velocidade marcha ligado]} @carr]
+    (println (str etapa ": Velocidade = " velocidade " km/h, Marcha = " marcha ", Ligado = " ligado))))
+; ...existing code...
 
-(frear 20)
-(mostrar "Freou 10 km/h")
+(defn mostrar [etapa]
+  (println (str etapa ": Velocidade = " (:velocidade @carr)
+                " km/h, Marcha = " (:marcha @carr)
+                ", Ligado = " (:ligado @carr))))
 
-
-
-(lombada)
-(mostrar "Passou na lombada")
-
-(semaforo)
-(mostrar "Parou no semáforo")
-(engatar-primeira)
-(mostrar "Engatou a primeira marcha")
-(acelerar 10)
-(mostrar "Acelerou 10 km/h")
-(acelerar 10)
-(mostrar "Acelerou 20 km/h")
-(acelerar 10)
-(mostrar "Acelerou 30 km/h")
-
-(desacelerar 10)
-(mostrar "Desacelerou 10 km/h")
-
-(frear 10)
-(mostrar "Freou 10 km/h")
-(parar)
-(mostrar "Parou o carro")
-
-(estacionar)
-(mostrar "Estacionou e Desligou o carro")
+;; Opcional: impedir desligar em movimento (não desliga se velocidade > 0)
+; (defn desligar-carro []
+;   (swap! carr
+;     (fn [c]
+;       (if (pos? (:velocidade c))
+;         c
+;         (assoc c :velocidade 0 :marcha 0 :ligado false)))))
